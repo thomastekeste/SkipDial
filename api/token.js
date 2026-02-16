@@ -6,24 +6,29 @@ module.exports = async (req, res) => {
 
   const API_KEY = process.env.TELNYX_API_KEY;
   const CONNECTION_ID = process.env.TELNYX_CONNECTION_ID;
+  const FROM_NUMBER = process.env.TELNYX_PHONE_NUMBER;
 
   if (!API_KEY || !CONNECTION_ID) {
     return res.status(500).json({ error: 'Missing TELNYX_API_KEY or TELNYX_CONNECTION_ID' });
   }
 
   try {
-    const credRes = await fetch('https://api.telnyx.com/v2/telephony_credentials', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
-      body: JSON.stringify({ connection_id: CONNECTION_ID })
-    });
-    if (!credRes.ok) {
-      const err = await credRes.text();
-      return res.status(500).json({ error: 'Failed to create credential', detail: err });
+    let credentialId = process.env.TELNYX_CREDENTIAL_ID;
+
+    if (!credentialId) {
+      const credRes = await fetch('https://api.telnyx.com/v2/telephony_credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+        body: JSON.stringify({ connection_id: CONNECTION_ID })
+      });
+      if (!credRes.ok) {
+        const err = await credRes.text();
+        return res.status(500).json({ error: 'Failed to create credential', detail: err });
+      }
+      const credData = await credRes.json();
+      credentialId = credData.data.id;
+      console.warn('Created new telephony credential:', credentialId, '— set TELNYX_CREDENTIAL_ID env var to reuse it');
     }
-    const credData = await credRes.json();
-    const credentialId = credData.data.id;
-    const sipUsername = credData.data.sip_username;
 
     const tokenRes = await fetch(`https://api.telnyx.com/v2/telephony_credentials/${credentialId}/token`, {
       method: 'POST',
@@ -35,7 +40,7 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: 'Failed to create token', detail: err });
     }
     const token = await tokenRes.text();
-    res.status(200).json({ token, sip_username: sipUsername, credential_id: credentialId });
+    res.status(200).json({ token, credential_id: credentialId, from_number: FROM_NUMBER || '' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
