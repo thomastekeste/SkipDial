@@ -9,6 +9,10 @@ module.exports = async (req, res) => {
   const CONNECTION_ID = process.env.TELNYX_CONNECTION_ID;
   if (!API_KEY) return res.status(500).json({ error: 'Missing TELNYX_API_KEY' });
 
+  const BASE_URL = process.env.VERCEL_URL
+    ? 'https://' + process.env.VERCEL_URL
+    : 'https://' + (req.headers['x-forwarded-host'] || req.headers.host);
+
   const { action, to, call_control_id } = req.body || {};
 
   try {
@@ -31,7 +35,7 @@ module.exports = async (req, res) => {
             maximum_number_of_words: 5,
             silence_threshold: 256
           },
-          webhook_url: `${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'https://your-app.vercel.app'}/api/webhook`,
+          webhook_url: `${BASE_URL}/api/webhook`,
           timeout_secs: 30
         })
       });
