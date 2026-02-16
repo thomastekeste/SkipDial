@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "env": {
+    "TELNYX_API_KEY": "@telnyx-api-key",
+    "TELNYX_CONNECTION_ID": "@telnyx-connection-id",
+    "TELNYX_PHONE_NUMBER": "@telnyx-phone-number",
+    "VM_DROP_AUDIO_URL": "@vm-drop-audio-url"
+  }
+}
