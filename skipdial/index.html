@@ -6,196 +6,512 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>SkipDial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0b0f1a;--bg2:#111827;--bg3:#1a2030;--border:#1e2636;
-  --text:#e8eaf0;--dim:#8b95a5;--accent:#3b82f6;--green:#10b981;
-  --red:#ef4444;--yellow:#eab308;--orange:#f97316;
+/* ============================================================
+   SKIPDIAL — Design Tokens
+   ============================================================ */
+:root {
+  /* Surface colors — professional dark mode (Zinc scale) */
+  --bg-base: #09090b;
+  --bg-surface: #18181b;
+  --bg-elevated: #27272a;
+  --bg-hover: #3f3f46;
+
+  /* Borders */
+  --border: #27272a;
+  --border-hover: #3f3f46;
+
+  /* Text hierarchy */
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+
+  /* Accent — indigo */
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --accent-muted: rgba(99, 102, 241, 0.12);
+
+  /* Semantic */
+  --success: #22c55e;
+  --success-muted: rgba(34, 197, 94, 0.12);
+  --warning: #eab308;
+  --warning-muted: rgba(234, 179, 8, 0.12);
+  --danger: #ef4444;
+  --danger-muted: rgba(239, 68, 68, 0.12);
+  --orange: #f97316;
+  --orange-muted: rgba(249, 115, 22, 0.12);
+
+  /* Typography */
+  --font: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Spacing (4px base) */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.25);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.3);
+  --shadow-glow: 0 0 30px rgba(99,102,241,0.2);
+
+  /* Transitions */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration: 200ms;
+  --duration-slow: 350ms;
 }
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
 *{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Segoe UI',sans-serif;
-  background:var(--bg);color:var(--text);min-height:100vh;
-  min-height:-webkit-fill-available;overflow:hidden;
+body {
+  font-family: var(--font);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 html{height:-webkit-fill-available}
-
-/* Full height app shell */
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 
-/* Toast */
-.toast{
-  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  background:var(--green);color:#fff;padding:8px 20px;border-radius:8px;
-  font-weight:600;font-size:0.85rem;z-index:999;white-space:nowrap;
-  transition:opacity 0.3s;pointer-events:none;
+/* ============================================================
+   Toast
+   ============================================================ */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(0);
+  background: var(--bg-elevated); color: var(--text-primary);
+  padding: 10px 20px; border-radius: var(--radius-md);
+  font-weight: 600; font-size: 0.85rem; z-index: 999;
+  white-space: nowrap; pointer-events: none;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+  border-left: 3px solid var(--success);
 }
-.toast.error{background:var(--red)}
-.toast.hidden{opacity:0}
+.toast.error { border-left-color: var(--danger); }
+.toast.hidden { opacity: 0; transform: translateX(-50%) translateY(8px); }
 
-/* Shared */
-.btn{
-  padding:12px 20px;border-radius:10px;font-weight:800;font-size:0.95rem;
-  cursor:pointer;font-family:inherit;border:none;transition:all .15s;
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  padding: 10px 20px; border-radius: var(--radius-md);
+  font-weight: 600; font-size: 0.875rem; cursor: pointer;
+  font-family: var(--font); border: none;
+  transition: all var(--duration) var(--ease);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
 }
-.btn:active{transform:scale(0.97)}
-.btn-green{background:var(--green);color:#fff}
-.btn-red{background:var(--red);color:#fff}
-.btn-accent{background:var(--accent);color:#fff}
-.btn-outline{background:none;border:2px solid var(--border);color:var(--text)}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.btn-ghost:hover { background: var(--bg-elevated); border-color: var(--border-hover); color: var(--text-primary); }
 
-/* ===== UPLOAD VIEW ===== */
-.upload-view{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:20px;text-align:center;
+/* ============================================================
+   Upload View
+   ============================================================ */
+.upload-view {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: var(--sp-5); text-align: center;
 }
-.upload-view h1{font-size:1.5rem;font-weight:800;margin-bottom:4px}
-.upload-view h1 span{color:var(--accent)}
-.upload-view p{color:var(--dim);font-size:0.85rem;margin-bottom:24px}
-.upload-box{
-  border:2px dashed #2a3040;border-radius:12px;padding:40px 20px;
-  cursor:pointer;background:var(--bg2);width:100%;max-width:400px;
+.upload-view h1 {
+  font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: var(--sp-1);
 }
-.upload-box:active{border-color:var(--accent)}
-.upload-box .icon{font-size:2rem;margin-bottom:8px}
-.upload-box .label{font-weight:600}
-.upload-box .hint{color:var(--dim);font-size:0.8rem;margin-top:4px}
-.demo-link{color:var(--accent);font-size:0.85rem;cursor:pointer;text-decoration:underline;margin-top:16px}
+.upload-view h1 span { color: var(--accent); }
+.upload-view > p { color: var(--text-tertiary); font-size: 0.9rem; margin-bottom: var(--sp-6); }
+.upload-box {
+  border: 1.5px dashed var(--border-hover); border-radius: var(--radius-lg);
+  padding: 40px 24px; cursor: pointer; background: var(--bg-surface);
+  width: 100%; max-width: 400px;
+  transition: all var(--duration) var(--ease);
+}
+.upload-box:hover, .upload-box:active { border-color: var(--accent); background: rgba(99,102,241,0.04); }
+.upload-box .icon { margin-bottom: var(--sp-3); color: var(--text-tertiary); }
+.upload-box .label { font-weight: 600; font-size: 0.95rem; }
+.upload-box .hint { color: var(--text-tertiary); font-size: 0.8rem; margin-top: var(--sp-1); }
+.demo-link {
+  color: var(--accent); font-size: 0.85rem; cursor: pointer;
+  text-decoration: none; margin-top: var(--sp-5);
+  transition: color var(--duration) var(--ease);
+}
+.demo-link:hover { color: var(--accent-hover); text-decoration: underline; }
 
-/* ===== LIST VIEW ===== */
-.list-header{
-  padding:12px 16px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:8px;flex-shrink:0;
+/* ============================================================
+   List View
+   ============================================================ */
+.list-header {
+  padding: var(--sp-4); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: var(--sp-2); flex-shrink: 0;
 }
-.list-header h2{font-size:1.1rem;font-weight:800;flex:1}
-.list-header h2 span{color:var(--accent)}
-.list-header .count{font-size:0.8rem;color:var(--dim)}
+.list-header h2 {
+  font-size: 1.1rem; font-weight: 800; flex: 1; letter-spacing: -0.02em;
+}
+.list-header h2 span { color: var(--accent); }
+.list-header .count { font-size: 0.8rem; color: var(--text-tertiary); }
 
-.list-actions{
-  padding:10px 16px;border-bottom:1px solid var(--border);
-  display:flex;gap:8px;flex-shrink:0;
+.list-actions {
+  padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border);
+  display: flex; gap: var(--sp-2); flex-shrink: 0;
 }
-.list-actions .btn{flex:1;text-align:center}
+.list-actions .btn { flex: 1; text-align: center; }
 
-.search-bar{padding:8px 16px;flex-shrink:0}
-.search-bar input{
-  width:100%;padding:10px 12px;border-radius:8px;
-  border:1px solid #2a3040;background:var(--bg2);color:var(--text);
-  font-size:0.9rem;font-family:inherit;
+.search-bar {
+  padding: var(--sp-2) var(--sp-4); flex-shrink: 0;
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(9,9,11,0.85);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.search-wrap { position: relative; }
+.search-wrap svg {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-tertiary); pointer-events: none;
+}
+.search-bar input {
+  width: 100%; padding: 10px 12px 10px 36px; border-radius: var(--radius-full);
+  border: 1px solid var(--border); background: var(--bg-surface);
+  color: var(--text-primary); font-size: 0.875rem; font-family: var(--font);
+  transition: border-color var(--duration) var(--ease);
+  outline: none;
+}
+.search-bar input:focus { border-color: var(--accent); }
+.search-bar input::placeholder { color: var(--text-tertiary); }
+
+.lead-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.lead-row {
+  padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: var(--sp-3); cursor: pointer;
+  transition: background var(--duration) var(--ease);
+}
+.lead-row:hover { background: var(--bg-surface); }
+.lead-row:active { background: var(--bg-elevated); }
+.lead-info { flex: 1; min-width: 0; }
+.lead-name {
+  font-weight: 700; font-size: 0.95rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lead-meta { font-size: 0.78rem; color: var(--text-tertiary); margin-top: 2px; }
+.lead-right { text-align: right; flex-shrink: 0; }
+.lead-time { font-size: 0.72rem; font-weight: 600; }
+.lead-status {
+  display: inline-block; padding: 2px 10px; border-radius: var(--radius-full);
+  font-size: 0.68rem; font-weight: 600; margin-top: 3px;
 }
 
-.lead-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.lead-row{
-  padding:12px 16px;border-bottom:1px solid #1a2030;
-  display:flex;align-items:center;gap:10px;cursor:pointer;
+/* ============================================================
+   Calling View
+   ============================================================ */
+.call-header {
+  padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
-.lead-row:active{background:rgba(59,130,246,0.06)}
-.lead-info{flex:1;min-width:0}
-.lead-name{font-weight:700;font-size:0.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lead-meta{font-size:0.78rem;color:var(--dim);margin-top:2px}
-.lead-right{text-align:right;flex-shrink:0}
-.lead-time{font-size:0.7rem;font-weight:700}
-.lead-status{
-  display:inline-block;padding:2px 8px;border-radius:4px;
-  font-size:0.7rem;font-weight:700;margin-top:3px;
+.call-header-top {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-1);
 }
-
-/* ===== CALLING VIEW ===== */
-.call-header{
-  padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+.call-header .power-label {
+  font-weight: 800; color: var(--accent); font-size: 0.75rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
 }
-.call-header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.call-header .power-label{font-weight:800;color:var(--green);font-size:0.85rem}
-.call-header .lead-num{font-weight:700;color:var(--accent);font-size:0.82rem}
-.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s}
-.call-stats{display:flex;justify-content:space-between;margin-top:3px;font-size:0.72rem;color:var(--dim)}
+.call-header .lead-num { font-weight: 600; color: var(--text-tertiary); font-size: 0.8rem; }
+.progress-bar {
+  height: 3px; background: var(--bg-elevated); border-radius: var(--radius-full); overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  transition: width 0.4s var(--ease);
+}
+.call-stats {
+  display: flex; justify-content: space-between; margin-top: var(--sp-1);
+  font-size: 0.72rem; color: var(--text-tertiary);
+}
 
 /* Lead card */
-.lead-card{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
-.lead-card .name{font-size:1.3rem;font-weight:800}
-.lead-card .details{font-size:0.82rem;color:var(--dim);margin-top:2px}
-.lead-card .notes{font-size:0.78rem;color:var(--dim);padding:5px 8px;background:var(--bg2);border-radius:6px;margin-top:6px}
+.lead-card {
+  padding: var(--sp-4); border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.lead-card .name { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; }
+.lead-card .details { font-size: 0.82rem; color: var(--text-secondary); margin-top: var(--sp-1); }
+.lead-card .notes {
+  font-size: 0.78rem; color: var(--text-secondary);
+  padding: var(--sp-2) var(--sp-3); background: var(--bg-surface);
+  border-radius: var(--radius-sm); margin-top: var(--sp-2);
+  border: 1px solid var(--border);
+}
 
 /* Call control */
-.call-control{padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
-.dial-btn{
-  display:block;width:100%;padding:14px;border-radius:10px;
-  font-weight:800;font-size:1.05rem;text-align:center;
-  text-decoration:none;cursor:pointer;border:none;font-family:inherit;
-  transition:all .15s;
+.call-control { padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.dial-btn {
+  display: block; width: 100%; padding: 14px; border-radius: var(--radius-md);
+  font-weight: 700; font-size: 1rem; text-align: center;
+  text-decoration: none; cursor: pointer; border: none; font-family: var(--font);
+  transition: all var(--duration) var(--ease);
 }
-.dial-btn:active{transform:scale(0.97)}
-.dial-btn.calling{background:var(--green);color:#fff;animation:pulse 2s infinite}
-.dial-btn.ringing{background:var(--yellow);color:#000;animation:pulse 1.5s infinite}
-.dial-btn.connected{background:var(--accent);color:#fff}
-.dial-btn.idle{background:var(--green);color:#fff}
-.dial-btn.ended{background:var(--bg3);color:var(--dim);border:1px solid var(--border)}
+.dial-btn:active { transform: scale(0.98); }
+.dial-btn.idle { background: var(--accent); color: #fff; }
+.dial-btn.idle:hover { background: var(--accent-hover); }
+.dial-btn.calling { background: var(--success); color: #fff; animation: pulse 2s infinite; }
+.dial-btn.ringing { background: var(--warning); color: #000; animation: pulse 1.5s infinite; }
+.dial-btn.connected { background: var(--accent); color: #fff; }
+.dial-btn.ended { background: var(--bg-surface); color: var(--text-tertiary); border: 1px solid var(--border); }
 
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.85}}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.8} }
 
-.hangup-btn{
-  display:block;width:100%;padding:10px;border-radius:8px;
-  background:var(--red);color:#fff;font-weight:700;font-size:0.9rem;
-  text-align:center;cursor:pointer;border:none;font-family:inherit;margin-top:6px;
+.hangup-btn {
+  display: block; width: 100%; padding: 10px; border-radius: var(--radius-md);
+  background: var(--danger); color: #fff; font-weight: 600; font-size: 0.875rem;
+  text-align: center; cursor: pointer; border: none; font-family: var(--font);
+  margin-top: var(--sp-2); transition: all var(--duration) var(--ease);
 }
-.call-timer{text-align:center;font-size:0.85rem;color:var(--dim);margin-top:6px;font-weight:600}
+.hangup-btn:hover { background: #dc2626; }
+.call-timer {
+  text-align: center; font-size: 0.85rem; color: var(--text-tertiary);
+  margin-top: var(--sp-2); font-weight: 600; font-variant-numeric: tabular-nums;
+}
 
 /* Quick disposition */
-.dispositions{padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
-.dispositions .label{font-size:0.78rem;color:var(--dim);margin-bottom:6px;font-weight:600}
-.disp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.disp-btn{
-  padding:12px 6px;border-radius:8px;font-weight:800;font-size:0.85rem;
-  cursor:pointer;font-family:inherit;transition:all .1s;background:none;
+.dispositions {
+  padding: var(--sp-2) var(--sp-4); border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
-.disp-btn:active{transform:scale(0.95)}
+.dispositions .label {
+  font-size: 0.72rem; color: var(--text-tertiary); margin-bottom: var(--sp-2);
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.disp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-2); }
+.disp-btn {
+  padding: 10px 6px; border-radius: var(--radius-md); font-weight: 700;
+  font-size: 0.82rem; cursor: pointer; font-family: var(--font);
+  transition: all var(--duration) var(--ease); background: transparent;
+}
+.disp-btn:hover { transform: scale(1.02); }
+.disp-btn:active { transform: scale(0.95); }
 
 /* Nav controls */
-.nav-controls{
-  padding:6px 16px;display:flex;gap:6px;
-  border-bottom:1px solid var(--border);flex-shrink:0;
+.nav-controls {
+  padding: var(--sp-2) var(--sp-4); display: flex; gap: var(--sp-2);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
-.nav-btn{
-  flex:1;padding:8px;border-radius:6px;border:1px solid #2a3040;
-  background:none;font-weight:700;font-size:0.82rem;cursor:pointer;
-  font-family:inherit;color:var(--text);
+.nav-btn {
+  flex: 1; padding: 8px; border-radius: var(--radius-md);
+  border: 1px solid var(--border); background: transparent;
+  font-weight: 600; font-size: 0.8rem; cursor: pointer;
+  font-family: var(--font); color: var(--text-secondary);
+  transition: all var(--duration) var(--ease);
 }
-.nav-btn:disabled{color:#3a4050;cursor:not-allowed}
-.nav-btn.pause{border-color:var(--yellow);color:var(--yellow)}
-.nav-btn.resume{border-color:var(--green);color:var(--green)}
-.nav-btn.stop{border-color:var(--red);color:var(--red)}
+.nav-btn:hover { background: var(--bg-surface); border-color: var(--border-hover); }
+.nav-btn:disabled { color: var(--bg-hover); cursor: not-allowed; }
+.nav-btn.pause { border-color: var(--warning); color: var(--warning); }
+.nav-btn.pause:hover { background: var(--warning-muted); }
+.nav-btn.resume { border-color: var(--success); color: var(--success); }
+.nav-btn.resume:hover { background: var(--success-muted); }
+.nav-btn.stop { border-color: var(--danger); color: var(--danger); }
+.nav-btn.stop:hover { background: var(--danger-muted); }
 
 /* Script section */
-.script-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px}
-.script-step{margin-bottom:6px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);overflow:hidden}
-.script-step-header{
-  padding:10px 12px;cursor:pointer;display:flex;
-  justify-content:space-between;align-items:center;
+.script-area {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: var(--sp-3); padding-bottom: 56px;
+  animation: fadeIn 0.3s var(--ease);
 }
-.script-step-header span{font-weight:700;font-size:0.88rem}
-.script-step-header .arrow{color:var(--dim);font-size:0.8rem}
-.script-step-body{
-  padding:10px 12px;font-size:0.82rem;line-height:1.6;
-  white-space:pre-wrap;color:#cbd5e1;border-top:1px solid var(--border);
+.script-step {
+  margin-bottom: var(--sp-2); border-radius: var(--radius-md);
+  background: var(--bg-surface); border: 1px solid var(--border); overflow: hidden;
+  transition: border-color var(--duration) var(--ease);
+}
+.script-step:hover { border-color: var(--border-hover); }
+.script-step-header {
+  padding: var(--sp-3) var(--sp-4); cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: background var(--duration) var(--ease);
+}
+.script-step-header:hover { background: var(--bg-elevated); }
+.script-step-header span:first-child { font-weight: 700; font-size: 0.88rem; }
+.script-step-header .arrow {
+  color: var(--text-tertiary); font-size: 0.9rem;
+  transition: transform var(--duration) var(--ease);
+  display: inline-block;
+}
+.script-step-header .arrow.open { transform: rotate(90deg); }
+.script-step-body {
+  overflow: hidden; transition: max-height var(--duration-slow) var(--ease);
+}
+.script-step-body-inner {
+  padding: var(--sp-3) var(--sp-4); font-size: 0.9rem; line-height: 1.7;
+  white-space: pre-wrap; color: var(--text-secondary);
+  border-top: 1px solid var(--border);
 }
 
-/* Session summary */
-.summary{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
-.summary h2{font-size:1.3rem;font-weight:800;margin-bottom:16px}
-.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:300px;margin-bottom:24px}
-.summary-stat{text-align:center;padding:12px;background:var(--bg2);border-radius:10px}
-.summary-stat .num{font-size:1.5rem;font-weight:800}
-.summary-stat .lbl{font-size:0.78rem;color:var(--dim);margin-top:2px}
-
-/* Connection status */
-.conn-status{
-  position:fixed;top:8px;right:8px;padding:4px 10px;
-  border-radius:6px;font-size:0.7rem;font-weight:700;z-index:50;
+/* ============================================================
+   Session Summary
+   ============================================================ */
+.summary {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: var(--sp-5);
+  animation: fadeIn 0.4s var(--ease);
 }
-.conn-status.connected{background:rgba(16,185,129,0.15);color:var(--green)}
-.conn-status.disconnected{background:rgba(239,68,68,0.15);color:var(--red)}
-.conn-status.connecting{background:rgba(234,179,8,0.15);color:var(--yellow)}
+.summary h2 {
+  font-size: 1.5rem; font-weight: 800; margin-bottom: var(--sp-5);
+  letter-spacing: -0.02em;
+}
+.summary-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3);
+  width: 100%; max-width: 320px; margin-bottom: var(--sp-6);
+}
+.summary-stat {
+  text-align: center; padding: var(--sp-5);
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration) var(--ease);
+}
+.summary-stat:hover { border-color: var(--border-hover); }
+.summary-stat .num {
+  font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.summary-stat .lbl { font-size: 0.78rem; color: var(--text-tertiary); margin-top: var(--sp-1); }
+
+/* ============================================================
+   Connection Status
+   ============================================================ */
+.conn-status {
+  position: fixed; top: 8px; right: 8px; padding: 4px 12px;
+  border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600;
+  z-index: 150; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.conn-status.connected { background: var(--success-muted); color: var(--success); }
+.conn-status.disconnected { background: var(--danger-muted); color: var(--danger); }
+.conn-status.connecting { background: var(--warning-muted); color: var(--warning); }
+
+/* ============================================================
+   Dialing Overlay — Full Screen
+   ============================================================ */
+.dial-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--bg-base);
+  animation: fadeIn 0.3s var(--ease);
+}
+
+/* Pulsing rings */
+.dial-rings {
+  position: relative; width: 180px; height: 180px; margin-bottom: var(--sp-8);
+}
+.dial-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--accent); opacity: 0;
+  animation: ringPulse 3s ease-out infinite;
+}
+.dial-ring:nth-child(2) { animation-delay: 0.6s; }
+.dial-ring:nth-child(3) { animation-delay: 1.2s; }
+.dial-ring:nth-child(4) { animation-delay: 1.8s; }
+@keyframes ringPulse {
+  0%   { transform: scale(0.5); opacity: 0.5; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* Phone icon center */
+.dial-icon {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 64px; height: 64px; background: var(--accent); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; box-shadow: var(--shadow-glow);
+  transition: background var(--duration-slow) var(--ease);
+}
+.dial-name {
+  font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+  margin-bottom: var(--sp-1);
+}
+.dial-phone {
+  font-size: 1rem; color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums; margin-bottom: var(--sp-4);
+}
+.dial-meta { display: flex; gap: var(--sp-5); color: var(--text-secondary); font-size: 0.85rem; }
+.dial-meta-item { display: flex; align-items: center; gap: var(--sp-1); }
+.dial-state {
+  margin-top: var(--sp-6); font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.dial-state.calling { color: var(--accent); }
+.dial-state.ringing { color: var(--warning); }
+.dial-state.connected { color: var(--success); }
+
+/* Ringing state — switch ring colors */
+.dial-overlay.ringing .dial-ring { border-color: var(--warning); }
+.dial-overlay.ringing .dial-icon { background: var(--warning); box-shadow: 0 0 30px rgba(234,179,8,0.2); }
+/* Connected state — rings fade away */
+.dial-overlay.connected .dial-ring { animation: none; opacity: 0; }
+.dial-overlay.connected .dial-icon { background: var(--success); box-shadow: 0 0 30px rgba(34,197,94,0.2); }
+
+.dial-overlay .hangup-btn {
+  margin-top: var(--sp-8); width: 200px;
+}
+
+/* Dispositions on overlay */
+.dial-overlay .dispositions {
+  margin-top: var(--sp-5); padding: 0; border: none; width: 100%; max-width: 360px;
+}
+
+/* ============================================================
+   Floating Stats Bar
+   ============================================================ */
+.stats-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  display: flex; justify-content: center; gap: var(--sp-5);
+  padding: var(--sp-2) var(--sp-4);
+  background: rgba(9,9,11,0.8);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem; font-weight: 600;
+}
+.stats-bar-item {
+  display: flex; align-items: center; gap: var(--sp-1);
+  color: var(--text-tertiary);
+}
+.stats-bar-item .num { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   Auto-Advance Countdown
+   ============================================================ */
+.auto-advance-bar {
+  padding: var(--sp-3) var(--sp-4); text-align: center;
+  background: var(--accent-muted); border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.auto-advance-bar .countdown-text {
+  font-size: 0.85rem; font-weight: 600; color: var(--accent);
+}
+.auto-advance-progress {
+  height: 3px; background: var(--bg-elevated);
+  border-radius: var(--radius-full); margin-top: var(--sp-2); overflow: hidden;
+}
+.auto-advance-fill {
+  height: 100%; background: var(--accent);
+  border-radius: var(--radius-full); transition: width 1s linear;
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes slideUp { from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
 </style>
 </head>
 <body>
@@ -207,7 +523,7 @@ html{height:-webkit-fill-available}
 
 <script>
 // ============================================================
-// VETSCRIPT POWER DIALER — Telnyx WebRTC Edition
+// SKIPDIAL POWER DIALER — Telnyx WebRTC Edition
 // ============================================================
 
 // ===== CONFIG =====
@@ -233,7 +549,17 @@ const STATE = {
   callTimer: 0,
   callTimerInterval: null,
   // AMD
-  lastAMDResult: null
+  lastAMDResult: null,
+  // Auto-advance
+  autoAdvanceTimer: null,
+  autoAdvanceCountdown: 0,
+  dispositioned: false,
+  // Ring tone
+  ringToneCtx: null,
+  ringToneTimer: null,
+  isRingTonePlaying: false,
+  // Dialing overlay
+  showDialOverlay: true
 };
 
 // ===== CONSTANTS =====
@@ -261,6 +587,26 @@ function showToast(msg, isError){
   toastTimer=setTimeout(()=>t.className='toast hidden',2500);
 }
 
+// ===== STATUS STYLE HELPER (dark theme mapping) =====
+function statusStyle(status) {
+  const map = {
+    'SOLD':       { bg: 'var(--success-muted)', color: 'var(--success)' },
+    'Scheduled Appt': { bg: 'var(--success-muted)', color: 'var(--success)' },
+    'NEW LEAD':   { bg: 'var(--accent-muted)', color: 'var(--accent)' },
+    'Follow Up':  { bg: 'var(--warning-muted)', color: 'var(--warning)' },
+    '1x VM':      { bg: 'var(--warning-muted)', color: 'var(--warning)' },
+    '2x VM':      { bg: 'var(--warning-muted)', color: 'var(--warning)' },
+    '3x VM':      { bg: 'var(--orange-muted)', color: 'var(--orange)' },
+    'Bad #':      { bg: 'var(--danger-muted)', color: 'var(--danger)' },
+    'Not Interested': { bg: 'var(--danger-muted)', color: 'var(--danger)' },
+    'DNC':        { bg: 'var(--danger-muted)', color: 'var(--danger)' },
+    '3x No VM':   { bg: 'var(--orange-muted)', color: 'var(--orange)' },
+    '3x 5th round': { bg: 'var(--orange-muted)', color: 'var(--orange)' },
+    'Already Covered/Irreplaceable': { bg: 'var(--success-muted)', color: 'var(--success)' },
+  };
+  return map[status] || { bg: 'var(--bg-elevated)', color: 'var(--text-secondary)' };
+}
+
 // ===== CSV PARSER =====
 function parseCSV(text){
   const L=text.split(/\r?\n/).filter(l=>l.trim());if(L.length<2)return[];
@@ -283,7 +629,7 @@ function parseCSV(text){
 // ===== TELNYX CLIENT =====
 async function initTelnyx(){
   try {
-    showToast('Connecting to Telnyx...');
+    showToast('Connecting to dialer...');
     const res = await fetch(API_BASE + '/api/token');
     if(!res.ok) throw new Error('Token fetch failed');
     const data = await res.json();
@@ -295,7 +641,7 @@ async function initTelnyx(){
 
     client.on('telnyx.ready', () => {
       STATE.telnyxReady = true;
-      showToast('📞 Dialer connected!');
+      showToast('Dialer connected');
       render();
     });
 
@@ -331,13 +677,20 @@ function handleTelnyxNotification(notification) {
     case 'callUpdate':
       if (call.state === 'ringing') {
         STATE.callState = 'ringing';
+        startRingTone();
       } else if (call.state === 'active') {
         STATE.callState = 'connected';
+        stopRingTone();
         startCallTimer();
+        STATE.showDialOverlay = false;
       } else if (call.state === 'hangup' || call.state === 'destroy') {
         STATE.callState = 'ended';
+        stopRingTone();
         stopCallTimer();
         STATE.currentCall = null;
+        if (!STATE.dispositioned) {
+          startAutoAdvance();
+        }
       }
       render();
       break;
@@ -345,16 +698,21 @@ function handleTelnyxNotification(notification) {
 }
 
 function dialNumber(phoneNumber) {
+  STATE.showDialOverlay = true;
+  STATE.dispositioned = false;
+
   if (!STATE.telnyxClient || !STATE.telnyxReady) {
     // Fallback to tel: link if WebRTC not connected
     window.location.href = 'tel:' + e164(phoneNumber);
     STATE.callState = 'calling';
+    startRingTone();
     render();
     return;
   }
 
   try {
     STATE.callState = 'calling';
+    startRingTone();
     render();
 
     const call = STATE.telnyxClient.newCall({
@@ -364,11 +722,12 @@ function dialNumber(phoneNumber) {
     });
 
     STATE.currentCall = call;
-    showToast('📞 Dialing...');
   } catch(err) {
     console.error('Dial error:', err);
+    stopRingTone();
     showToast('Dial failed: ' + err.message, true);
     STATE.callState = 'idle';
+    STATE.showDialOverlay = false;
     render();
   }
 }
@@ -379,6 +738,7 @@ function hangupCall() {
     STATE.currentCall = null;
   }
   STATE.callState = 'ended';
+  stopRingTone();
   stopCallTimer();
   render();
 }
@@ -399,6 +759,107 @@ function startCallTimer(){
 
 function stopCallTimer(){
   clearInterval(STATE.callTimerInterval);
+}
+
+// ===== RING TONE (Web Audio API) =====
+function startRingTone() {
+  if (STATE.isRingTonePlaying) return;
+  try {
+    if (!STATE.ringToneCtx) {
+      STATE.ringToneCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (STATE.ringToneCtx.state === 'suspended') {
+      STATE.ringToneCtx.resume();
+    }
+    STATE.isRingTonePlaying = true;
+    playRingCycle();
+  } catch(e) {
+    console.warn('Ring tone unavailable:', e);
+  }
+}
+
+function playRingCycle() {
+  if (!STATE.isRingTonePlaying) return;
+  const ctx = STATE.ringToneCtx;
+  try {
+    const gain = ctx.createGain();
+    gain.gain.value = 0.12;
+    gain.connect(ctx.destination);
+
+    const osc1 = ctx.createOscillator();
+    osc1.frequency.value = 440;
+    osc1.type = 'sine';
+    osc1.connect(gain);
+
+    const osc2 = ctx.createOscillator();
+    osc2.frequency.value = 480;
+    osc2.type = 'sine';
+    osc2.connect(gain);
+
+    const now = ctx.currentTime;
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 2);
+    osc2.stop(now + 2);
+
+    // 2s ring + 4s silence = 6s cycle
+    STATE.ringToneTimer = setTimeout(() => playRingCycle(), 6000);
+  } catch(e) {
+    console.warn('Ring cycle error:', e);
+  }
+}
+
+function stopRingTone() {
+  STATE.isRingTonePlaying = false;
+  clearTimeout(STATE.ringToneTimer);
+  STATE.ringToneTimer = null;
+}
+
+// ===== AUTO-ADVANCE =====
+function startAutoAdvance() {
+  clearAutoAdvance();
+  STATE.autoAdvanceCountdown = 3;
+  render();
+
+  STATE.autoAdvanceTimer = setInterval(() => {
+    STATE.autoAdvanceCountdown--;
+    if (STATE.autoAdvanceCountdown <= 0) {
+      clearAutoAdvance();
+      advanceToNextLead();
+    } else {
+      render();
+    }
+  }, 1000);
+}
+
+function clearAutoAdvance() {
+  if (STATE.autoAdvanceTimer) {
+    clearInterval(STATE.autoAdvanceTimer);
+    STATE.autoAdvanceTimer = null;
+  }
+  STATE.autoAdvanceCountdown = 0;
+}
+
+function advanceToNextLead() {
+  const ni = STATE.queueIdx + 1;
+  if (ni < STATE.queue.length && !STATE.paused) {
+    STATE.queueIdx = ni;
+    STATE.openSteps = {};
+    STATE.callState = 'idle';
+    STATE.dispositioned = false;
+    STATE.showDialOverlay = true;
+    render();
+    const nl = STATE.leads.find(l => l.id === STATE.queue[ni]);
+    if (nl) {
+      STATE.called.add(STATE.queue[ni]);
+      setTimeout(() => dialNumber(nl.phone), 300);
+    }
+  } else if (ni >= STATE.queue.length) {
+    STATE.view = 'summary';
+    render();
+  } else {
+    render();
+  }
 }
 
 // ===== SCRIPT GENERATOR =====
@@ -435,6 +896,7 @@ function startDialing(fromId){
   STATE.queue=q;STATE.queueIdx=si;STATE.called=new Set();
   STATE.stats={calls:0,vms:0,appts:0,sold:0,notint:0,bad:0,callbacks:0};
   STATE.paused=false;STATE.openSteps={};STATE.callState='idle';
+  STATE.dispositioned=false;STATE.showDialOverlay=true;STATE.autoAdvanceCountdown=0;
   STATE.view='calling';
   render();
   // Auto-dial first lead
@@ -451,6 +913,9 @@ function disposition(status){
   const lid=STATE.queue[STATE.queueIdx];
   const lead=STATE.leads.find(l=>l.id===lid);
   if(!lead)return;
+
+  STATE.dispositioned=true;
+  clearAutoAdvance();
 
   // Hangup current call if active
   hangupCall();
@@ -471,27 +936,16 @@ function disposition(status){
 
   showToast(`${fn(lead.name)} → ${ns}`);
 
-  // Auto advance
-  const ni=STATE.queueIdx+1;
-  if(ni<STATE.queue.length&&!STATE.paused){
-    setTimeout(()=>{
-      STATE.queueIdx=ni;STATE.openSteps={};STATE.callState='idle';
-      render();
-      const nl=STATE.leads.find(l=>l.id===STATE.queue[ni]);
-      if(nl){
-        STATE.called.add(STATE.queue[ni]);
-        setTimeout(()=>dialNumber(nl.phone),300);
-      }
-    },800);
-  } else if(ni>=STATE.queue.length){
-    STATE.view='summary';render();
-  } else {
-    render();
-  }
+  // Immediate advance
+  STATE.showDialOverlay=true;
+  advanceToNextLead();
 }
 
 function skipLead(){
+  clearAutoAdvance();
   hangupCall();
+  STATE.showDialOverlay=true;
+  STATE.dispositioned=false;
   const ni=STATE.queueIdx+1;
   if(ni<STATE.queue.length){
     STATE.queueIdx=ni;STATE.openSteps={};STATE.callState='idle';render();
@@ -501,6 +955,8 @@ function skipLead(){
 }
 
 function stopDialer(){
+  clearAutoAdvance();
+  stopRingTone();
   hangupCall();
   STATE.view='summary';
   render();
@@ -515,41 +971,59 @@ function render(){
   if(STATE.view==='summary') return renderSummary(app);
 }
 
+function connStatusHTML(){
+  if(!STATE.telnyxClient) return '<div class="conn-status disconnected">Not Connected</div>';
+  if(STATE.telnyxReady) return '<div class="conn-status connected">Connected</div>';
+  return '<div class="conn-status connecting">Connecting...</div>';
+}
+
+// ===== RENDER: UPLOAD =====
 function renderUpload(app){
   app.innerHTML=`
     <div class="upload-view">
-      <h1>🇺🇸 Skip<span>Dial</span></h1>
-      <p>Power dialer + script. Upload CSV to start.</p>
+      <h1>Skip<span>Dial</span></h1>
+      <p>Power dialer + live script. Upload your CSV to start.</p>
       <div class="upload-box" onclick="document.getElementById('csvFile').click()">
-        <div class="icon">📁</div>
-        <div class="label">Tap to upload CSV</div>
+        <div class="icon">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+          </svg>
+        </div>
+        <div class="label">Upload CSV</div>
         <div class="hint">NAME, PHONE, DOB, STATE, STATUS</div>
         <input type="file" id="csvFile" accept=".csv,.tsv,.txt" style="display:none" onchange="handleFile(event)">
       </div>
-      <div class="demo-link" onclick="loadDemo()">Load demo data →</div>
+      <div class="demo-link" onclick="loadDemo()">Load demo data</div>
     </div>
     ${connStatusHTML()}
   `;
 }
 
+// ===== RENDER: LIST =====
 function renderList(app){
   const fl=STATE.search?STATE.leads.filter(l=>l.name.toLowerCase().includes(STATE.search.toLowerCase())||l.state.toLowerCase().includes(STATE.search.toLowerCase())):STATE.leads;
   const nc=buildQueue().length;
   app.innerHTML=`
     <div class="list-header">
-      <h2>🇺🇸 <span>${STATE.sheetName||'Leads'}</span></h2>
+      <h2><span>${STATE.sheetName||'Leads'}</span></h2>
       <span class="count">${STATE.leads.length} leads</span>
     </div>
     <div class="list-actions">
-      <button class="btn btn-green" onclick="startDialing()">⚡ Power Dial (${nc})</button>
-      <button class="btn btn-outline" onclick="STATE.view='upload';STATE.leads=[];render()">+ New</button>
+      <button class="btn btn-primary" onclick="startDialing()">Power Dial (${nc})</button>
+      <button class="btn btn-ghost" onclick="STATE.view='upload';STATE.leads=[];render()">+ New</button>
     </div>
     <div class="search-bar">
-      <input id="searchInput" placeholder="Search..." value="${STATE.search}" oninput="STATE.search=this.value;render()">
+      <div class="search-wrap">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input id="searchInput" placeholder="Search leads..." value="${STATE.search}" oninput="STATE.search=this.value;render()">
+      </div>
     </div>
     <div class="lead-list">
       ${fl.map(l=>{
         const w=cw(l.state);
+        const ss=statusStyle(l.status);
         return`<div class="lead-row" onclick="startDialing('${l.id}')">
           <div class="lead-info">
             <div class="lead-name">${l.name}</div>
@@ -557,7 +1031,7 @@ function renderList(app){
           </div>
           <div class="lead-right">
             <div class="lead-time" style="color:${w.c}">${w.l} ${w.t}</div>
-            <div class="lead-status" style="background:${SBG[l.status]||'#334155'};color:${STX[l.status]||'#000'}">${l.status}</div>
+            <div class="lead-status" style="background:${ss.bg};color:${ss.color}">${l.status}</div>
           </div>
         </div>`;
       }).join('')}
@@ -566,6 +1040,54 @@ function renderList(app){
   `;
 }
 
+// ===== RENDER: DIALING OVERLAY =====
+function renderDialOverlay(lead){
+  const w=cw(lead.state);
+  const stateClass=STATE.callState;
+  const stateLabel=STATE.callState==='calling'?'DIALING':STATE.callState==='ringing'?'RINGING':STATE.callState==='connected'?'CONNECTED':'';
+
+  return `
+    <div class="dial-overlay ${stateClass}" id="dialOverlay">
+      <div class="dial-rings">
+        <div class="dial-ring"></div>
+        <div class="dial-ring"></div>
+        <div class="dial-ring"></div>
+        <div class="dial-ring"></div>
+        <div class="dial-icon">📞</div>
+      </div>
+      <div class="dial-name">Dialing ${lead.name}...</div>
+      <div class="dial-phone">${fmt(lead.phone)}</div>
+      <div class="dial-meta">
+        ${lead.age>0?`<span class="dial-meta-item">Age ${lead.age}</span>`:''}
+        ${lead.state?`<span class="dial-meta-item">${STNAMES[lead.state]||lead.state}</span>`:''}
+        <span class="dial-meta-item" style="color:${w.c}">${w.l} ${w.t}</span>
+      </div>
+      <div class="dial-state ${stateClass}">${stateLabel}</div>
+      <button class="hangup-btn" onclick="hangupCall()">End Call</button>
+      <div class="dispositions">
+        <div class="label">Quick Disposition</div>
+        <div class="disp-grid">
+          ${QBTNS.map(b=>`<button class="disp-btn" style="border:1.5px solid ${b.c};color:${b.c}" onclick="disposition('${b.s}')">${b.l}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ===== RENDER: STATS BAR =====
+function renderStatsBar(){
+  const s=STATE.stats;
+  return `
+    <div class="stats-bar">
+      <div class="stats-bar-item"><span class="num">${s.calls}</span> calls</div>
+      <div class="stats-bar-item"><span class="num" style="color:var(--warning)">${s.vms}</span> VMs</div>
+      <div class="stats-bar-item"><span class="num" style="color:var(--success)">${s.appts}</span> appts</div>
+      <div class="stats-bar-item"><span class="num" style="color:var(--success)">${s.sold}</span> sold</div>
+    </div>
+  `;
+}
+
+// ===== RENDER: CALLING =====
 function renderCalling(app){
   const cur=STATE.queue[STATE.queueIdx]?STATE.leads.find(l=>l.id===STATE.queue[STATE.queueIdx]):null;
   if(!cur){STATE.view='summary';render();return;}
@@ -574,18 +1096,26 @@ function renderCalling(app){
   const script=genScript(cur);
   const cs=STATE.callState;
 
+  // Show overlay during dialing/ringing
+  const showOverlay=STATE.showDialOverlay&&(cs==='calling'||cs==='ringing');
+
+  // Auto-advance countdown
+  const showCountdown=cs==='ended'&&!STATE.dispositioned&&STATE.autoAdvanceCountdown>0;
+
   let dialBtnClass='dial-btn idle';
-  let dialBtnText=`📞 ${fmt(cur.phone)}`;
-  if(cs==='calling'){dialBtnClass='dial-btn calling';dialBtnText='📞 Dialing...';}
-  if(cs==='ringing'){dialBtnClass='dial-btn ringing';dialBtnText='🔔 Ringing...';}
-  if(cs==='connected'){dialBtnClass='dial-btn connected';dialBtnText='🔊 Connected';}
-  if(cs==='ended'){dialBtnClass='dial-btn ended';dialBtnText='Call Ended — tap disposition';}
+  let dialBtnText=fmt(cur.phone);
+  if(cs==='calling'){dialBtnClass='dial-btn calling';dialBtnText='Dialing...';}
+  if(cs==='ringing'){dialBtnClass='dial-btn ringing';dialBtnText='Ringing...';}
+  if(cs==='connected'){dialBtnClass='dial-btn connected';dialBtnText='Connected';}
+  if(cs==='ended'){dialBtnClass='dial-btn ended';dialBtnText='Call Ended';}
 
   app.innerHTML=`
+    ${showOverlay?renderDialOverlay(cur):''}
+
     <div class="call-header">
       <div class="call-header-top">
-        <span class="power-label">⚡ POWER DIALER</span>
-        <span class="lead-num">Lead ${STATE.queueIdx+1}/${STATE.queue.length}</span>
+        <span class="power-label">Power Dialer</span>
+        <span class="lead-num">${STATE.queueIdx+1} / ${STATE.queue.length}</span>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
       <div class="call-stats">
@@ -594,73 +1124,105 @@ function renderCalling(app){
       </div>
     </div>
 
+    ${showCountdown?`
+      <div class="auto-advance-bar">
+        <div class="countdown-text">Next lead in ${STATE.autoAdvanceCountdown}...</div>
+        <div class="auto-advance-progress">
+          <div class="auto-advance-fill" style="width:${((3-STATE.autoAdvanceCountdown)/3)*100}%"></div>
+        </div>
+      </div>
+    `:''}
+
     <div class="lead-card">
       <div class="name">${cur.name}</div>
-      <div class="details">${cur.age>0?'Age '+cur.age+' · ':''}${STNAMES[cur.state]||cur.state} <span style="color:${w.c};font-weight:700">· ${w.l} ${w.t}</span></div>
-      ${cur.notes?'<div class="notes">📝 '+cur.notes+'</div>':''}
+      <div class="details">
+        ${cur.age>0?'Age '+cur.age+' &middot; ':''}${STNAMES[cur.state]||cur.state}
+        <span style="color:${w.c};font-weight:700">&middot; ${w.l} ${w.t}</span>
+      </div>
+      ${cur.notes?'<div class="notes">'+cur.notes+'</div>':''}
     </div>
 
     <div class="call-control">
       <button class="${dialBtnClass}" onclick="${cs==='idle'||cs==='ended'?`dialNumber('${cur.phone}')`:''}">
         ${dialBtnText}
       </button>
-      ${cs==='connected'||cs==='calling'||cs==='ringing'?'<button class="hangup-btn" onclick="hangupCall()">🔴 Hang Up</button>':''}
+      ${cs==='connected'||cs==='calling'||cs==='ringing'?'<button class="hangup-btn" onclick="hangupCall()">Hang Up</button>':''}
       ${cs==='connected'?'<div class="call-timer" id="callTimer">0:00</div>':''}
     </div>
 
     <div class="dispositions">
-      <div class="label">TAP TO DISPOSITION & AUTO-DIAL NEXT:</div>
+      <div class="label">${cs==='ended'&&!STATE.dispositioned?'Optional — auto-advancing...':'Disposition'}</div>
       <div class="disp-grid">
-        ${QBTNS.map(b=>`<button class="disp-btn" style="border:2px solid ${b.c};color:${b.c}" onclick="disposition('${b.s}')">${b.l}</button>`).join('')}
+        ${QBTNS.map(b=>`<button class="disp-btn" style="border:1.5px solid ${b.c};color:${b.c}" onclick="disposition('${b.s}')">${b.l}</button>`).join('')}
       </div>
     </div>
 
     <div class="nav-controls">
-      <button class="nav-btn" onclick="if(STATE.queueIdx>0){hangupCall();STATE.queueIdx--;STATE.openSteps={};STATE.callState='idle';render();const p=STATE.leads.find(l=>l.id===STATE.queue[STATE.queueIdx]);if(p)setTimeout(()=>dialNumber(p.phone),300);}" ${STATE.queueIdx<=0?'disabled':''}>◀ Prev</button>
-      <button class="nav-btn" onclick="skipLead()" ${STATE.queueIdx>=STATE.queue.length-1?'disabled':''}>Skip ▶</button>
-      <button class="nav-btn ${STATE.paused?'resume':'pause'}" onclick="STATE.paused=!STATE.paused;render()">${STATE.paused?'▶ Go':'⏸ Pause'}</button>
-      <button class="nav-btn stop" onclick="stopDialer()">⏹ Stop</button>
+      <button class="nav-btn" onclick="if(STATE.queueIdx>0){clearAutoAdvance();hangupCall();STATE.queueIdx--;STATE.openSteps={};STATE.callState='idle';STATE.showDialOverlay=true;render();const p=STATE.leads.find(l=>l.id===STATE.queue[STATE.queueIdx]);if(p)setTimeout(()=>dialNumber(p.phone),300);}" ${STATE.queueIdx<=0?'disabled':''}>Prev</button>
+      <button class="nav-btn" onclick="skipLead()" ${STATE.queueIdx>=STATE.queue.length-1?'disabled':''}>Skip</button>
+      <button class="nav-btn ${STATE.paused?'resume':'pause'}" onclick="STATE.paused=!STATE.paused;if(STATE.paused)clearAutoAdvance();render()">${STATE.paused?'Resume':'Pause'}</button>
+      <button class="nav-btn stop" onclick="clearAutoAdvance();stopDialer()">Stop</button>
     </div>
 
-    <div class="script-area">
-      ${script.map((s,i)=>{
-        const isOpen=s.collapsed?!!STATE.openSteps[i]:STATE.openSteps[i]!==false;
-        return`<div class="script-step">
-          <div class="script-step-header" onclick="STATE.openSteps[${i}]=!STATE.openSteps[${i}];if(STATE.openSteps[${i}]===undefined)STATE.openSteps[${i}]=${s.collapsed?'true':'false'};render()">
-            <span>${s.title}</span>
-            <span class="arrow">${isOpen?'▼':'▶'}</span>
-          </div>
-          ${isOpen?`<div class="script-step-body">${s.body}</div>`:''}
-        </div>`;
-      }).join('')}
-    </div>
+    ${cs==='connected'?`
+      <div class="script-area">
+        ${script.map((s,i)=>{
+          const isOpen=s.collapsed?!!STATE.openSteps[i]:STATE.openSteps[i]!==false;
+          return`<div class="script-step">
+            <div class="script-step-header" onclick="STATE.openSteps[${i}]=${isOpen?'false':'true'};render()">
+              <span>${s.title}</span>
+              <span class="arrow ${isOpen?'open':''}">&rsaquo;</span>
+            </div>
+            <div class="script-step-body" style="max-height:${isOpen?'2000px':'0'}">
+              <div class="script-step-body-inner">${s.body}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    `:''}
+
+    ${renderStatsBar()}
     ${connStatusHTML()}
   `;
 }
 
+// ===== RENDER: SUMMARY =====
 function renderSummary(app){
   const s=STATE.stats;
   app.innerHTML=`
     <div class="summary">
-      <h2>📊 Session Complete</h2>
+      <h2>Session Complete</h2>
       <div class="summary-grid">
-        <div class="summary-stat"><div class="num" style="color:var(--accent)">${s.calls}</div><div class="lbl">Total Calls</div></div>
-        <div class="summary-stat"><div class="num" style="color:var(--yellow)">${s.vms}</div><div class="lbl">Voicemails</div></div>
-        <div class="summary-stat"><div class="num" style="color:var(--green)">${s.appts}</div><div class="lbl">Appointments</div></div>
-        <div class="summary-stat"><div class="num" style="color:var(--green)">${s.sold}</div><div class="lbl">Sold</div></div>
-        <div class="summary-stat"><div class="num" style="color:var(--accent)">${s.callbacks}</div><div class="lbl">Callbacks</div></div>
-        <div class="summary-stat"><div class="num" style="color:var(--red)">${s.notint+s.bad}</div><div class="lbl">Dead Leads</div></div>
+        <div class="summary-stat"><div class="num" data-target="${s.calls}" style="color:var(--accent)">0</div><div class="lbl">Total Calls</div></div>
+        <div class="summary-stat"><div class="num" data-target="${s.vms}" style="color:var(--warning)">0</div><div class="lbl">Voicemails</div></div>
+        <div class="summary-stat"><div class="num" data-target="${s.appts}" style="color:var(--success)">0</div><div class="lbl">Appointments</div></div>
+        <div class="summary-stat"><div class="num" data-target="${s.sold}" style="color:var(--success)">0</div><div class="lbl">Sold</div></div>
+        <div class="summary-stat"><div class="num" data-target="${s.callbacks}" style="color:var(--accent)">0</div><div class="lbl">Callbacks</div></div>
+        <div class="summary-stat"><div class="num" data-target="${s.notint+s.bad}" style="color:var(--danger)">0</div><div class="lbl">Dead Leads</div></div>
       </div>
-      <button class="btn btn-green" onclick="STATE.view='list';render()" style="width:100%;max-width:300px;margin-bottom:10px">Back to Lead List</button>
-      <button class="btn btn-accent" onclick="startDialing()" style="width:100%;max-width:300px">⚡ Dial Again</button>
+      <button class="btn btn-ghost" onclick="STATE.view='list';render()" style="width:100%;max-width:300px;margin-bottom:10px">Back to Leads</button>
+      <button class="btn btn-primary" onclick="startDialing()" style="width:100%;max-width:300px">Dial Again</button>
     </div>
   `;
+  animateCounters();
 }
 
-function connStatusHTML(){
-  if(!STATE.telnyxClient) return '<div class="conn-status disconnected">📡 Not Connected</div>';
-  if(STATE.telnyxReady) return '<div class="conn-status connected">📡 Connected</div>';
-  return '<div class="conn-status connecting">📡 Connecting...</div>';
+function animateCounters(){
+  const els=document.querySelectorAll('.summary-stat .num[data-target]');
+  els.forEach(el=>{
+    const target=parseInt(el.dataset.target)||0;
+    if(target===0)return;
+    const duration=800;
+    const start=performance.now();
+    function tick(now){
+      const elapsed=now-start;
+      const progress=Math.min(elapsed/duration,1);
+      const eased=1-Math.pow(1-progress,3);
+      el.textContent=Math.round(eased*target);
+      if(progress<1)requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
 }
 
 // ===== FILE HANDLING =====
