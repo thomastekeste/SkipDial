@@ -1,20 +1,15 @@
 {
   "name": "skipdial",
-<<<<<<< HEAD
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "@telnyx/webrtc": "^2.9.0"
-=======
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
+    "@telnyx/webrtc": "^2.9.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -28,6 +23,5 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
->>>>>>> 59e27d6 (Initial commit from Create Next App)
   }
 }
