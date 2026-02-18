@@ -16,7 +16,7 @@ interface Lead {
   vmCount: number;
 }
 
-type View = "upload" | "list" | "dialing" | "connected" | "postcall" | "summary";
+type View = "upload" | "list" | "dialing" | "script" | "postcall" | "summary";
 
 interface SessionStats {
   calls: number;
@@ -259,6 +259,12 @@ function SkipForwardIcon() {
 function CheckIcon() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>;
 }
+function FileTextIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>;
+}
+function ChevronDownIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>;
+}
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
@@ -304,6 +310,7 @@ export default function Home() {
   const [autoAdvancing, setAutoAdvancing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [dialed, setDialed] = useState(false);
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["intro"]));
 
   // ── Refs ────────────────────────────────────────────────────────────────
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -390,7 +397,7 @@ export default function Home() {
   // ── Call duration timer ─────────────────────────────────────────────────
 
   useEffect(() => {
-    if (view === "connected" && callStartTime > 0) {
+    if (view === "script" && callStartTime > 0) {
       callTimerRef.current = setInterval(() => {
         setCallDuration(Math.floor((Date.now() - callStartTime) / 1000));
       }, 250);
@@ -505,7 +512,8 @@ export default function Home() {
     setStats((p) => ({ ...p, calls: p.calls + 1 }));
     setCallStartTime(Date.now());
     setCallDuration(0);
-    setView("connected");
+    setOpenSections(new Set(["intro"]));
+    setView("script");
   }, [currentLead]);
 
   const handleDialNoAnswer = useCallback(() => {
@@ -690,54 +698,295 @@ export default function Home() {
     );
 
   // ════════════════════════════════════════════════════════════════════════
-  // CONNECTED VIEW (user tapped "Answered" — call timer running)
+  // SCRIPT VIEW (user tapped "Script" — VET script with call timer)
   // ════════════════════════════════════════════════════════════════════════
 
-  } else if (view === "connected") {
+  } else if (view === "script") {
+    const firstName = currentLead ? currentLead.name.split(" ")[0] : "___";
+    const leadDob = currentLead?.dob || "___";
+    const leadState = currentLead?.state || "___";
+
+    const toggleSection = (id: string) => {
+      setOpenSections(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+      });
+    };
+
+    const S = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+        <button onClick={() => toggleSection(id)}
+          className="flex w-full items-center justify-between px-4 py-3 text-left">
+          <span className="text-sm font-bold text-zinc-900 dark:text-white">{title}</span>
+          <span className={`text-zinc-400 transition-transform ${openSections.has(id) ? "rotate-180" : ""}`}><ChevronDownIcon /></span>
+        </button>
+        {openSections.has(id) && (
+          <div className="border-t border-[var(--border)] px-4 py-3 text-[13px] leading-relaxed text-zinc-700 dark:text-zinc-300">
+            {children}
+          </div>
+        )}
+      </div>
+    );
+
+    const Agent = ({ children }: { children: React.ReactNode }) => (
+      <p className="my-1 text-xs italic text-red-400 dark:text-red-400/80">{children}</p>
+    );
+    const Gold = ({ children }: { children: React.ReactNode }) => (
+      <p className="my-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-600 dark:text-amber-400">{children}</p>
+    );
+    const Blue = ({ children }: { children: React.ReactNode }) => (
+      <p className="my-1 text-[13px] text-blue-500 dark:text-blue-400">{children}</p>
+    );
+    const H = ({ children }: { children: React.ReactNode }) => (
+      <p className="mb-1 mt-3 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{children}</p>
+    );
+    const B = ({ children }: { children: React.ReactNode }) => (
+      <p className="my-1 pl-3 text-[13px] text-zinc-700 dark:text-zinc-300">• {children}</p>
+    );
+
     viewContent = (
       <div className="flex min-h-screen flex-col bg-[var(--background)]">
-        <div className="absolute left-4 top-4"><ThemeToggle isDark={isDark} onToggle={toggleTheme} /></div>
-        <div className="border-b border-[var(--border)] bg-[var(--card)] px-4 py-4">
-          <div className="mx-auto flex max-w-2xl items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="relative flex h-3 w-3">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22C55E] opacity-75" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-[#22C55E]" />
-              </span>
-              {currentLead && (
-                <div>
-                  <span className="text-sm font-bold text-zinc-900 dark:text-white">{currentLead.name}</span>
-                  <span className="ml-2 text-xs text-zinc-400 dark:text-zinc-500">
-                    {[currentLead.age ? `Age ${currentLead.age}` : null, currentLead.state].filter(Boolean).join(" · ")}
-                  </span>
-                </div>
-              )}
-            </div>
-            <span className="font-mono text-lg font-bold text-[#22C55E]">{formatDuration(callDuration)}</span>
-          </div>
-        </div>
-        <div className="border-b border-[var(--border)] bg-[var(--background)] px-4 py-3">
-          <div className="mx-auto flex max-w-2xl items-center justify-center gap-4">
-            {[{ label: "Calls", value: stats.calls }, { label: "VMs", value: stats.voicemails }, { label: "Appts", value: stats.appointments }, { label: "Sold", value: stats.sold }].map(s => (
-              <div key={s.label} className="flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{s.label}</span>
-                <span className="font-mono text-xs font-bold text-zinc-700 dark:text-zinc-300">{s.value}</span>
+        {/* Sticky top bar */}
+        <div className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--card)]">
+          <div className="px-4 py-3">
+            <div className="mx-auto flex max-w-2xl items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="relative flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22C55E] opacity-75" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-[#22C55E]" />
+                </span>
+                {currentLead && (
+                  <div>
+                    <span className="text-sm font-bold text-zinc-900 dark:text-white">{currentLead.name}</span>
+                    <span className="ml-2 text-xs text-zinc-400 dark:text-zinc-500">
+                      {[currentLead.age ? `Age ${currentLead.age}` : null, currentLead.state].filter(Boolean).join(" · ")}
+                    </span>
+                  </div>
+                )}
               </div>
-            ))}
+              <span className="font-mono text-lg font-bold text-[#22C55E]">{formatDuration(callDuration)}</span>
+            </div>
+          </div>
+          <div className="border-t border-[var(--border)] px-4 py-2">
+            <div className="mx-auto flex max-w-2xl items-center justify-between">
+              <div className="flex items-center gap-3">
+                {[{ label: "Calls", value: stats.calls }, { label: "VMs", value: stats.voicemails }, { label: "Appts", value: stats.appointments }, { label: "Sold", value: stats.sold }].map(s => (
+                  <div key={s.label} className="flex items-center gap-1 text-[10px]">
+                    <span className="font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{s.label}</span>
+                    <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300">{s.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={endCall} className="flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-red-600 active:scale-[0.98]"><PhoneOffIcon /> End</button>
+                <button onClick={handleStop} className="rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"><StopIcon /></button>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="border-b border-[var(--border)] bg-[var(--background)] px-4 py-3">
-          <div className="mx-auto flex max-w-2xl items-center justify-center gap-3">
-            <button onClick={endCall} className="flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-red-600 active:scale-[0.98]"><PhoneOffIcon /> End Call</button>
-            <button onClick={handleStop} className="flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-[var(--card)] dark:text-zinc-400"><StopIcon /> Stop</button>
+
+        {/* Scrollable script body */}
+        <main className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="mx-auto max-w-2xl space-y-3">
+
+            <S id="intro" title="INTRO">
+              <p>Hey <strong>{firstName}</strong>, this is <span className="text-amber-500">(your first name)</span> with the Veterans Benefits Office. You doing alright today?</p>
+              <p className="mt-2">Okay perfect, I was just giving you a call in regards to the Final Expense and Life options for Veterans. Just to confirm I&apos;ve got your DOB listed here as <strong>{leadDob}</strong>. Is that Correct?</p>
+              <p className="mt-2">And you&apos;re still in the state of <strong>{leadState}</strong> Correct?</p>
+              <p className="mt-2">It shows on my side your main concern was like most veterans just wanting to make sure that the Funeral Expense doesn&apos;t fall a burden on your loved ones Correct?</p>
+            </S>
+
+            <S id="objections" title="INTRO OBJECTIONS">
+              <H>You are the 10th person that has called me!</H>
+              <Blue>I completely understand, but it doesn&apos;t look like anyone has contacted you from our office. It must have been a telemarketer from India or something. Then go back to the script…</Blue>
+
+              <H>I already have coverage in place!</H>
+              <Blue>Perfect, that makes my job a whole lot easier.. Did you get that in place with the Veteran benefit office or Private carrier?....Okay and was it more recently or has it been a few years?...How much are you covered for and what do they have you paying each month?</Blue>
+              <Agent>IF MORE THAN 50K assume term/accidental… Assume small whole life. Check to see if you can beat the rate!</Agent>
+              <Blue>(REPLACE) Are you sick, do you have cancer, AIDS? That carrier usually has people on 2 to 5 year waiting periods, and has people paying sick rates.</Blue>
+              <Agent>IF YOU CAN&apos;T BEAT CURRENT RATE OR PAID UP FUNERAL — PIVOT TO ADDING</Agent>
+              <Blue>Looks like they got you a good rate when you were still young. Now was that coverage for a burial or cremation? Gotcha, You were just looking to make sure to take care of any residual expenses that come up. Right?</Blue>
+              <Agent>Spend their coverage.. High funeral costs, Mortgage, income, Debts, I love you money</Agent>
+
+              <H>I don&apos;t remember filling this out!</H>
+              <Blue>Perfect, I usually don&apos;t remember what I eat for breakfast most days. You put your date of birth as <strong>{leadDob}</strong> correct? Now, most people&apos;s main concern when they fill this out is to make sure that their final expense doesn&apos;t fall a burden on their loved ones that would be the same for you right?</Blue>
+
+              <H>I&apos;m not interested!</H>
+              <Blue>I completely understand, when you sent this request in, what was your main concern? Do you have any coverage currently in place to pay for your burial or cremation? If yes: Perfect, when you sent this in were you just trying to save some money with the new discounted programs or add more coverage?</Blue>
+
+              <H>This is not a good time or I&apos;m busy!</H>
+              <Blue><strong>{firstName}</strong>, perfect we are really backed up too! I&apos;ll make this quick for you. You put your date of birth as <strong>{leadDob}</strong> correct?</Blue>
+
+              <H>VA will take care of my burial</H>
+              <Blue>I completely understand, but that&apos;s actually a common misconception that veterans get buried for free. I wish that was the case.. If it was up to me all veterans should get put to rest at no cost! But unfortunately, too many veterans actually don&apos;t know what the VA covers for them when they pass away. The VA just covers your plot but your loved ones would be responsible for your burial/cremation. That being said, god forbid something happened to you today, who would be responsible for the funeral expenses and picking up all the pieces tomorrow?</Blue>
+            </S>
+
+            <S id="why" title="DIG INTO WHY">
+              <Gold>Now god forbid, if you were to pass away today who would be the beneficiary responsible paying for the funeral expenses?</Gold>
+              <B>What is their name? Okay and can you spell that for me?</B>
+              <B>Is (beneficiary name) in a financial position to cover a funeral expense or is that why you were looking into this?</B>
+              <Blue>If Yes: I completely understand, you were just wanting to make sure (beneficiary) didn&apos;t have to dig into their savings or come out of pocket for the expense, correct?</Blue>
+              <p className="mt-2">I completely understand, that&apos;s why most veterans send in these requests. So their loved ones aren&apos;t burdened with that expense.</p>
+              <p className="mt-2">Have you thought about whether you were to be buried or cremated?</p>
+              <p className="mt-2">Do you know how much that costs nowadays?!</p>
+              <B>Cremation: 5-7k depending on the celebration/urn.</B>
+              <B>Burial: 12-20k depending on the fanciness of the service &amp; the opening/closing.</B>
+              <p className="mt-2">Do you have anything put aside somewhere in a significant savings or do you have a policy that would cover that cost God Forbid something were to happen to you today?</p>
+              <Agent>ONLY IF YES: Okay, and you said you wanted (Beneficiary) to be left with a check..not a bill, right?</Agent>
+              <Agent>ONLY IF NO: Okay, and you said coming out of pocket for that expense would be pretty tough on (Beneficiary)?</Agent>
+              <Gold>So since you don&apos;t have anything as of today, your goal is to put your family in a situation where you don&apos;t leave a financial burden behind when you do pass away, correct?</Gold>
+            </S>
+
+            <S id="suitability" title="CLIENT SUITABILITY">
+              <p>So what we&apos;ll do is spend about a minute or so on yourself and your financial situation to make sure everything is affordable and within the budget. Then we&apos;ll spend about 2 minutes on your health.. and that&apos;s just gonna help me navigate which one of the 26 VA A rated carriers we need to apply for today ok.</p>
+
+              <H>Income</H>
+              <B>Now are you currently working, retired, or disabled?</B>
+              <Agent>IF retired: I can&apos;t wait to say that one day! / IF disabled: Bless your heart!</Agent>
+              <B>What would you say you bring in per month just to the ballpark?</B>
+              <B>At the end of month once you pay all your bills, utilities, and all the fun things you like to do. How much would you say you are typically left with?</B>
+              <Agent>Little to No Income ($200 or under):</Agent>
+              <Blue>I completely understand, so that being said, what would be a comfortable amount that you would be comfortable allocating into something like this every month to protect your loved ones?</Blue>
+              <Agent>Push Back: Do you mind if I make a recommendation..</Agent>
+              <Blue>I would say some coverage is better than no coverage to alleviate that financial burden. So we can always start with the lowest option available then increase when times get better. If you can&apos;t afford $50-$75/mo how do you expect (Beneficiary) to afford that entire funeral expense.. Does that make sense?</Blue>
+              <Agent>Income Objection: Why do you need to know that?</Agent>
+              <Blue>Well <strong>{firstName}</strong>, there are guidelines I have to abide by in regards to making sure whichever option you choose is gonna be affordable for you based on your income. Sometimes our hearts are bigger than our budgets. Don&apos;t worry, I&apos;m here to help you not hurt you!</Blue>
+
+              <H>Discounts</H>
+              <B>Are you a smoker or Nonsmoker?</B>
+              <Agent>If smoker: Do you plan on quitting anytime soon over the next couple years? Yes → AMERICO</Agent>
+              <B>Do you bank with a military branch credit union or a state or federal bank like Chase or Wells Fargo?</B>
+              <Agent>Note the name of the financial institution.</Agent>
+
+              <H>Health</H>
+              <B>For all of your medical needs do you go to the VA or a civilian doctor? Are all prescriptions through the VA or civilian?</B>
+              <B>Any complaints on your behalf?</B>
+              <B>Any heart attacks, heart failure, strokes, TIA, or stents in the last 5 yrs?</B>
+              <Agent>If yes: Blood thinners (Plavix/warfarin)? Heart meds (Nitrostat, nitroglycerin, eliquis)?</Agent>
+              <B>Any cancer in the last 5 years? What kind? How long in remission?</B>
+              <B>Any diabetes? If yes: metformin or insulin?</B>
+              <B>Any neuropathy? If yes: gabapentin?</B>
+              <B>Any breathing complications, COPD? If yes: oxygen or inhaler?</B>
+              <B>Any kidney or liver problems? If yes: kidney failure/disorder or dialysis?</B>
+              <B>Rough height and weight?</B>
+              <Agent>Bear with me for 1 minute. I&apos;m going to run this information through all the different carriers in the entire country and see which one is going to give us the cheapest rate, and then we&apos;ll apply for that one Ok.</Agent>
+            </S>
+
+            <S id="benefits" title="BENEFITS">
+              <p className="mb-2">Go ahead and grab a Pen/Paper for me.</p>
+              <H>Build Trust</H>
+              <p>Now go ahead and write down my name and my number since I will be taking care of you and (beneficiary) Today.</p>
+              <p className="mt-2">I&apos;m gonna give you some information about the benefits that come with this type of plan specifically for Veterans.</p>
+              <B><strong>Immediate coverage:</strong> As soon as you make your first premium you&apos;re covered day 1, no 2 year wait period like most carriers!</B>
+              <B><strong>Locked in:</strong> Premium never increases and coverage never decreases!</B>
+              <B><strong>TAX-FREE:</strong> The death benefit, living benefit, and cash value are one of the few things we don&apos;t have to pay Uncle Sam for!</B>
+              <B><strong>Living benefit:</strong> IF you get a terminal illness, and the doctor tells you that you have 12-24 months to live you&apos;ll have access to 50% of the benefit tax free while you&apos;re still living!</B>
+              <B><strong>Double Accidental PayOut:</strong> If your cause of death is choke, drown, slip, fall, or die in a car accident your coverage would double.</B>
+              <B><strong>Permanent coverage:</strong> This coverage will never expire on you.. it is a whole life policy.</B>
+            </S>
+
+            <S id="quote" title="QUOTE — BRONZE / SILVER / GOLD">
+              <p>Based on what you&apos;ve told me the system has built 3 packages of coverage and you can decide on which option makes the most sense. Now Write down BRONZE, SILVER, AND GOLD….</p>
+              <H>Bronze</H>
+              <p>Will cover a full funeral expense and make sure (Beneficiary) won&apos;t have to come out of pocket for your funeral…. That will be (Coverage Amount) with your veterans discount that would be only _____/month.</p>
+              <H>Silver</H>
+              <p>Will leave a little bit extra behind to cover any left over bills…. help with inflation…. or even leave a few extra thousands behind for (Beneficiary)…. That will be (Coverage Amount) with your veterans discount that would be only _____/month.</p>
+              <H>Gold</H>
+              <p>That&apos;s going to cover all of the above, the funeral expense, left over bills, help with inflation and on top of that leave a nice financial cushion/legacy behind for (Beneficiary) to live on for a few years once you pass. That will be (Coverage Amount) with your veterans discount that would only be _____/month.</p>
+              <Gold>Now {firstName}, which one of those best fits what you&apos;re looking to put in place for (Beneficiary)?</Gold>
+              <Agent>If picking the cheapest: Awesome. Any particular reason you chose that one vs the silver or gold? I ask because most veterans usually go with the silver or gold because of inflation.</Agent>
+            </S>
+
+            <S id="close-objections" title="CLOSING OBJECTIONS">
+              <H>I need to think about it</H>
+              <Blue>I completely understand, you definitely need to think about it. When you say you need to think about it.. are you thinking about if you should even get the coverage at all or which coverage amount you should go with?</Blue>
+              <Agent>If which one: Let&apos;s start with bare minimum, make sure you can get the approval and foot in the door. Then we can always increase it in the future. Does that make sense?</Agent>
+              <Agent>If don&apos;t need: spin back on why, did they have any insurance? Or any money saved up?</Agent>
+
+              <H>I need to talk to my wife about this!</H>
+              <Blue>Push Back 1: I completely understand. She is the beneficiary of the plan, and she has to know what&apos;s going on. You can&apos;t keep this a secret that&apos;s for sure. Do you need to talk to her about which one to go with or if you should even do this because you said that this was to protect her, correct?</Blue>
+              <Blue>Push Back 2: <strong>{firstName}</strong>, do you mind if I make a recommendation? Now, we can both agree that accidents can occur at any time, correct? Now if something happened to you while driving on the way home tomorrow.. And you had put this protection in place for your wife on possibly her worst day. Do you think that she would be mad at you?</Blue>
+
+              <H>I&apos;m just shopping around today!</H>
+              <Blue>I completely understand, even if you wanted to buy it today I couldn&apos;t give it to you. Like I mentioned the way that this coverage works it&apos;s not like going to the store where we can just see it and buy it. We do have to get approved for this. I punched everything into the state system and this is the lowest one with the states discount, if this one declines you the next cheapest one is a few dollars more.</Blue>
+            </S>
+
+            <S id="application" title="START APPLICATION">
+              <p>Perfect, now we&apos;ll send in a request for coverage and hope to get the approval, now if they decline you we&apos;ll go to the next lowest option. Keep in mind they don&apos;t approve everyone but I will do my best to get you the coverage ok.</p>
+              <Gold>Now, is this something you&apos;ve been thinking about for awhile?</Gold>
+
+              <H>First Page</H>
+              <B>Confirm spelling first/last name</B>
+              <B>Height/weight</B>
+              <B>Mailing address (house or apartment?)</B>
+              <B>Phone number on file</B>
+              <B>Email on file</B>
+              <B>State you were born in?</B>
+              <B>City you were born in?</B>
+              <B>Obviously, you are a US Citizen!</B>
+              <B>And, your social <strong>{firstName}</strong>?</B>
+              <Agent>Repeat It Back.</Agent>
+
+              <H>SSN Objection</H>
+              <Blue>Push Back #1: I completely understand, now the main reason they ask for that is so that they can run the medical background check and actually get you approved for the cheapest coverage, and number two that&apos;s going to be the only thing linked to your death certificate so they can actually pay (Beneficiary) God forbid something happens to you. Does that make sense?</Blue>
+              <Blue>Push Back #2: No worries, Go ahead and confirm the last four.</Blue>
+
+              <H>Health Filler Questions</H>
+              <B>Do you use anything to help you walk around? Cane, wheelchair, scooter?</B>
+              <B>Any oxygen equipment to help you breathe?</B>
+              <B>Any help with daily activities? Eating, bathing, toileting, dressing?</B>
+              <B>Any COVID-19 in the last 90 days?</B>
+              <B>Any alcohol or drug abuse in your past?</B>
+              <B>Any Alzheimers or Dementia?</B>
+              <B>Any AIDS or HIV?</B>
+              <B>Any hepatitis?</B>
+              <B>Any Brain tumor or brain aneurysm?</B>
+              <B>Any dangerous activities planned in the next two years? Bungee jumping, skydiving, rock climbing?</B>
+
+              <H>Beneficiary — Build the Emotion</H>
+              <B>Confirm beneficiary from earlier..</B>
+              <B>Confirm spelling of name, relationship, and DOB</B>
+              <B>Confirm the % of death benefit they will receive.</B>
+              <B>If spouse ask if they want a &quot;back up&quot; or &quot;contingent&quot; beneficiary</B>
+              <Agent>SPOUSE: How long have you been married for? Any tips for me? Any grandkids?</Agent>
+              <Agent>CHILD: Awesome, do you see them often? What do you all like to do? Any grandkids?</Agent>
+              <Gold>Got it; if you don&apos;t mind me asking, what really got you thinking into getting something like this in place for (beneficiary)?</Gold>
+              <Agent>LET THEM TALK</Agent>
+            </S>
+
+            <S id="billing" title="BILLING & PAYMENT">
+              <p>Hey <strong>{firstName}</strong>… the next part here is the state&apos;s anti money laundering verification portion… Most veterans like for their policy to start when they receive their benefits… What day is that for you?</p>
+              <Agent>1st, 3rd of the month, or 2nd/3rd/4th Wednesday of the month are the only payment dates you should set</Agent>
+              <B>Is your name spelled the same way with your bank? Or do you use a middle initial?</B>
+              <B>Ok, and you wanted to list (Name of bank) correct?</B>
+              <B>Ok, and is that a checking or a savings?</B>
+              <B>Perfect, and it looks like we are partnered with (Name of bank)?</B>
+              <Agent>9/10 times the routing number that automates is correct. Go ahead and grab a checkbook to confirm it. Read it off to them. And the account #? Make them repeat it twice.</Agent>
+
+              <H>No Checkbook</H>
+              <Blue>Do you get your statements via mail or email? I&apos;m guessing you have the app on your phone, right? No worries, we can just add the debit card on file for now and update it later.</Blue>
+              <Agent>Ask if Visa or Mastercard, card number, expiration month/yr, 3 digit CVV on back. MAKE THEM REPEAT IT TWICE.</Agent>
+
+              <H>Bank Objection</H>
+              <Blue>Push Back #1: I completely understand, now quick question <strong>{firstName}</strong>: have you ever given or received a check from anyone in your lifetime? Perfect, if you notice at the bottom of every check you&apos;ll see the bank&apos;s routing and account number because that information can&apos;t be used to buy something online or go to your local Walmart and go on a shopping spree OK? What would be weird is if I would&apos;ve asked you for something like a debit/credit card which is an unsecured payment method. Does that make sense?</Blue>
+              <Blue>Push Back #2: I completely understand, so the state is required by law to validate that information provided is linked to your name for your safety and the safety of others. Do you receive text messages to this phone? I&apos;m gonna send you a picture of my screen for further transparency.</Blue>
+            </S>
+
+            <S id="close" title="CLOSE & REFERRALS">
+              <p>So <strong>{firstName}</strong>, everything is fully submitted at this point. Couple things to recap, the coverage we applied for was for XXX and the name of the insurance carrier is XXX.</p>
+              <p className="mt-2">Also, this number we are talking on, this is my direct line, it&apos;s the same number my mom calls me on. Anything you ever need in regards to this coverage, I&apos;m always the first person you can reach out to, I&apos;m just a phone call or text away ok.</p>
+              <p className="mt-2">Lastly, this is important, we always contact the department of insurance in the state and let them know that we have completed the request and submitted an application. The reason we do that is because it should remove you from any kind of lists of solicitations about this coverage. No one will ever contact you about this coverage other than myself or the carrier asking you for any personal information ok.</p>
+              <p className="mt-2">But with the internet these days you will still probably get some calls but none will be anything in regard to what we did. So if they say they&apos;re my manager, it&apos;s incomplete, due for review, etc it&apos;s just a line of crap from some telemarketer trying to pull a fast one on you ok.</p>
+
+              <H>Referrals</H>
+              <p>Also, my digital card will be in that text if you want to save it or send it around. We currently have a referral program which is a $50 VISA referral fee for each person that gets approved for a policy and makes their first premium. Could you think of one or two people who&apos;d benefit from a simple chat about their coverage options? It&apos;d mean a lot to ensure they&apos;re not left unprotected. If so, just make sure they mention your name!</p>
+              <p className="mt-2">One last thing.. Are there any questions or concerns I may have left unanswered? I appreciate you allowing me to serve you. Have a blessed rest of your day!</p>
+              <Agent>Disposition as SOLD on RINGY</Agent>
+            </S>
+
           </div>
-        </div>
-        <div className="flex flex-1 items-center justify-center px-4">
-          <div className="text-center">
-            <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500">Sales script will appear here</p>
-            <p className="mt-1 text-xs text-zinc-300 dark:text-zinc-600">On a live call — tap End Call when done</p>
-          </div>
-        </div>
+        </main>
       </div>
     );
 
@@ -814,8 +1063,8 @@ export default function Home() {
                     Left VM
                   </button>
                   <button onClick={handleDialAnswered}
-                    className="rounded-xl bg-[#22C55E]/10 px-4 py-2.5 text-xs font-bold text-[#22C55E] transition-colors hover:bg-[#22C55E]/20">
-                    Answered
+                    className="flex items-center gap-1.5 rounded-xl bg-[#22C55E]/10 px-4 py-2.5 text-xs font-bold text-[#22C55E] transition-colors hover:bg-[#22C55E]/20">
+                    <FileTextIcon /> Script
                   </button>
                   <button onClick={handleDialNoAnswer}
                     className="rounded-xl bg-zinc-500/10 px-4 py-2.5 text-xs font-bold text-zinc-500 transition-colors hover:bg-zinc-500/20 dark:text-zinc-400">
