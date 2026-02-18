@@ -265,6 +265,9 @@ function FileTextIcon() {
 function ChevronDownIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>;
 }
+function XIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
+}
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
@@ -394,16 +397,7 @@ export default function Home() {
     return () => clearTimeout(t);
   }, [view, sessionPaused, currentLead]);
 
-  // ── Call duration timer ─────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (view === "script" && callStartTime > 0) {
-      callTimerRef.current = setInterval(() => {
-        setCallDuration(Math.floor((Date.now() - callStartTime) / 1000));
-      }, 250);
-      return () => { if (callTimerRef.current) clearInterval(callTimerRef.current); };
-    }
-  }, [view, callStartTime]);
+  // ── Call duration timer (unused — script is read-only) ──────────────────
 
   // ── Cleanup on unmount ──────────────────────────────────────────────────
 
@@ -507,11 +501,8 @@ export default function Home() {
     startAutoAdvance();
   }, [currentLead, updateLeadStatus, showToast, startAutoAdvance]);
 
-  const handleDialAnswered = useCallback(() => {
+  const handleOpenScript = useCallback(() => {
     if (!currentLead) return;
-    setStats((p) => ({ ...p, calls: p.calls + 1 }));
-    setCallStartTime(Date.now());
-    setCallDuration(0);
     setOpenSections(new Set(["intro"]));
     setView("script");
   }, [currentLead]);
@@ -533,6 +524,7 @@ export default function Home() {
 
   const endCall = useCallback(() => {
     if (callTimerRef.current) clearInterval(callTimerRef.current);
+    setStats((p) => ({ ...p, calls: p.calls + 1 }));
     setView("postcall");
   }, []);
 
@@ -664,11 +656,11 @@ export default function Home() {
 
   } else if (view === "postcall") {
     const outcomes = [
-      { key: "followup", label: "Follow Up", icon: "📞" },
-      { key: "appointment", label: "Set Appointment", icon: "📅" },
-      { key: "sold", label: "SOLD", icon: "🎉" },
-      { key: "not_interested", label: "Not Interested", icon: "👎" },
-      { key: "bad_number", label: "Bad Number", icon: "❌" },
+      { key: "followup", label: "Follow Up" },
+      { key: "appointment", label: "Set Appointment" },
+      { key: "sold", label: "SOLD" },
+      { key: "not_interested", label: "Not Interested" },
+      { key: "bad_number", label: "Bad Number" },
     ];
     viewContent = (
       <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] px-4">
@@ -679,16 +671,15 @@ export default function Home() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[10px] text-lg font-bold text-white"
                 style={{ backgroundColor: getAvatarColor(currentLead.name) }}>{getInitials(currentLead.name)}</div>
               <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{currentLead.name}</h2>
-              <p className="mt-1 font-mono text-sm text-zinc-400">{formatPhone(currentLead.phone)}</p>
-              <p className="mb-6 mt-1 font-mono text-sm font-semibold text-[#22C55E]">{formatDuration(callDuration)}</p>
+              <p className="mb-6 mt-1 font-mono text-sm text-zinc-400">{formatPhone(currentLead.phone)}</p>
             </>
           )}
           <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">What happened?</p>
           <div className="space-y-2">
             {outcomes.map(o => (
               <button key={o.key} onClick={() => handleOutcome(o.key)}
-                className="flex w-full items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3.5 text-left text-sm font-semibold text-zinc-800 shadow-sm transition-all hover:shadow-md active:scale-[0.99] dark:text-zinc-200 dark:hover:border-zinc-600">
-                <span className="text-base">{o.icon}</span>{o.label}
+                className="flex w-full items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3.5 text-left text-sm font-semibold text-zinc-800 shadow-sm transition-all hover:shadow-md active:scale-[0.99] dark:text-zinc-200 dark:hover:border-zinc-600">
+                {o.label}
               </button>
             ))}
           </div>
@@ -752,10 +743,10 @@ export default function Home() {
           <div className="px-4 py-3">
             <div className="mx-auto flex max-w-2xl items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="relative flex h-3 w-3">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22C55E] opacity-75" />
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-[#22C55E]" />
-                </span>
+                <button onClick={() => setView("dialing")}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200">
+                  <XIcon />
+                </button>
                 {currentLead && (
                   <div>
                     <span className="text-sm font-bold text-zinc-900 dark:text-white">{currentLead.name}</span>
@@ -765,7 +756,7 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <span className="font-mono text-lg font-bold text-[#22C55E]">{formatDuration(callDuration)}</span>
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Script</p>
             </div>
           </div>
           <div className="border-t border-[var(--border)] px-4 py-2">
@@ -1062,7 +1053,7 @@ export default function Home() {
                     className="rounded-xl bg-[#EAB308]/10 px-4 py-2.5 text-xs font-bold text-[#EAB308] transition-colors hover:bg-[#EAB308]/20">
                     Left VM
                   </button>
-                  <button onClick={handleDialAnswered}
+                  <button onClick={handleOpenScript}
                     className="flex items-center gap-1.5 rounded-xl bg-[#22C55E]/10 px-4 py-2.5 text-xs font-bold text-[#22C55E] transition-colors hover:bg-[#22C55E]/20">
                     <FileTextIcon /> Script
                   </button>
