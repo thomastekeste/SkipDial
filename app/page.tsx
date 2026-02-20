@@ -328,12 +328,21 @@ export default function Home() {
 
   const currentLead = dialQueue[queueIndex] || null;
 
-  // ── Theme initialization ────────────────────────────────────────────────
+  // ── Initialization (theme + persisted leads) ────────────────────────────
   useEffect(() => {
     const stored = localStorage.getItem("skipdial-theme");
     const dark = stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
     setIsDark(dark);
     document.documentElement.classList.toggle("dark", dark);
+
+    const savedLeads = localStorage.getItem("skipdial-leads");
+    if (savedLeads) {
+      try {
+        const parsed = JSON.parse(savedLeads) as Lead[];
+        if (parsed.length > 0) { setLeads(parsed); setView("list"); }
+      } catch { /* corrupt data, ignore */ }
+    }
+
     setMounted(true);
   }, []);
 
@@ -345,6 +354,14 @@ export default function Home() {
       return next;
     });
   }, []);
+
+  // ── Persist leads to localStorage ────────────────────────────────────────
+  useEffect(() => {
+    if (!mounted) return;
+    if (leads.length > 0) {
+      localStorage.setItem("skipdial-leads", JSON.stringify(leads));
+    }
+  }, [leads, mounted]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -428,7 +445,7 @@ export default function Home() {
   }, [handleFile]);
 
   const handleLoadDemo = useCallback(() => { setLeads(buildDemoLeads()); setView("list"); }, []);
-  const handleNewList = useCallback(() => { setLeads([]); setSearch(""); setView("upload"); }, []);
+  const handleNewList = useCallback(() => { localStorage.removeItem("skipdial-leads"); setLeads([]); setSearch(""); setView("upload"); }, []);
 
   // ── Session controls ────────────────────────────────────────────────────
 
@@ -436,6 +453,9 @@ export default function Home() {
     const queue = leads
       .filter((l) => getCallWindow(l.state).score > 0 && !SKIPPED_STATUSES.has(l.status))
       .sort((a, b) => {
+        const aNew = a.status === "NEW LEAD" ? 0 : 1;
+        const bNew = b.status === "NEW LEAD" ? 0 : 1;
+        if (aNew !== bNew) return aNew - bNew;
         const aW = getCallWindow(a.state), bW = getCallWindow(b.state);
         if (bW.score !== aW.score) return bW.score - aW.score;
         return (b.age || 0) - (a.age || 0);
@@ -562,6 +582,9 @@ export default function Home() {
         l.state.toLowerCase().includes(q) || l.status.toLowerCase().includes(q));
     }
     return [...result].sort((a, b) => {
+      const aNew = a.status === "NEW LEAD" ? 1 : 0;
+      const bNew = b.status === "NEW LEAD" ? 1 : 0;
+      if (aNew !== bNew) return aNew - bNew;
       const aW = getCallWindow(a.state), bW = getCallWindow(b.state);
       if (bW.score !== aW.score) return bW.score - aW.score;
       return (b.age || 0) - (a.age || 0);
