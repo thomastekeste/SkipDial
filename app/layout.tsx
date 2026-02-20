@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -33,7 +34,7 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem("skipdial-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark")}}catch(e){}})()`,
           }}
         />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
