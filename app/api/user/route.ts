@@ -8,6 +8,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const stripeConfigured = !!process.env.STRIPE_SECRET_KEY;
+
   const db = supabaseAdmin();
   const { data: existing } = await db
     .from("users")
@@ -16,7 +18,7 @@ export async function GET() {
     .single();
 
   if (existing) {
-    return NextResponse.json(existing);
+    return NextResponse.json({ ...existing, stripe_configured: stripeConfigured });
   }
 
   const clerk = await currentUser();
@@ -32,5 +34,5 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(created);
+  return NextResponse.json({ ...created, stripe_configured: stripeConfigured });
 }

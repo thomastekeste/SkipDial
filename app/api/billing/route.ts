@@ -9,11 +9,8 @@ export async function POST(req: Request) {
   }
 
   const { customerId } = await req.json();
-  if (!customerId) {
-    return NextResponse.json(
-      { error: "Missing customerId" },
-      { status: 400 }
-    );
+  if (!customerId || typeof customerId !== "string" || !customerId.startsWith("cus_")) {
+    return NextResponse.json({ error: "Invalid customer ID" }, { status: 400 });
   }
 
   const origin = req.headers.get("origin") || "http://localhost:3000";

@@ -30,6 +30,7 @@ create table if not exists leads (
 );
 
 create index if not exists idx_leads_user_id on leads(user_id);
+create index if not exists idx_leads_status on leads(status);
 
 -- Call sessions table
 create table if not exists call_sessions (
@@ -53,11 +54,18 @@ alter table users enable row level security;
 alter table leads enable row level security;
 alter table call_sessions enable row level security;
 
--- Policies: users can only access their own data
--- These use the Clerk user ID passed via the Supabase client
-create policy "Users can read own data" on users for select using (true);
-create policy "Users can update own data" on users for update using (true);
+-- RLS policies: restrict rows to the owning user.
+-- NOTE: All server-side queries use supabaseAdmin() (service role key) which
+-- bypasses RLS. These policies are a defense-in-depth safety net in case the
+-- anon client is ever used directly.
 
-create policy "Users can CRUD own leads" on leads for all using (true);
+create policy "own_select" on users for select
+  using (id = coalesce(current_setting('request.jwt.claims', true)::json->>'sub', ''));
+create policy "own_update" on users for update
+  using (id = coalesce(current_setting('request.jwt.claims', true)::json->>'sub', ''));
 
-create policy "Users can CRUD own sessions" on call_sessions for all using (true);
+create policy "own_leads" on leads for all
+  using (user_id = coalesce(current_setting('request.jwt.claims', true)::json->>'sub', ''));
+
+create policy "own_sessions" on call_sessions for all
+  using (user_id = coalesce(current_setting('request.jwt.claims', true)::json->>'sub', ''));
